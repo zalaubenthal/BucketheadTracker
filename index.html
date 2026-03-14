@@ -1,217 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buckethead Pikes Tracker</title>
 
 <style>
-
 body{
-font-family:Arial;
-background:#111;
-color:white;
-text-align:center;
-padding:20px;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#111827;
+  color:white;
+  padding:20px;
 }
-
+.card{
+  background:#1f2937;
+  padding:16px;
+  border-radius:10px;
+  margin-bottom:16px;
+}
 button{
-padding:10px 16px;
-margin:6px;
-font-size:16px;
-cursor:pointer;
+  padding:10px 14px;
+  border:0;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:8px;
 }
-
-input, textarea, select{
-padding:6px;
-margin:6px;
+.small{
+  font-size:13px;
+  padding:6px 10px;
 }
-
-#pikeDisplay{
-font-size:18px;
-font-weight:bold;
-margin-top:10px;
+.pike-line{
+  font-size:28px;
+  font-weight:bold;
+  line-height:1.3;
+  margin:12px 0 16px;
+  word-break:break-word;
 }
-
-.history-item{
-background:#222;
-padding:10px;
-margin:10px auto;
-width:420px;
-border-radius:6px;
+input,textarea,select{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  margin-bottom:10px;
+  border-radius:6px;
+  border:1px solid #374151;
+  background:#111827;
+  color:white;
+  box-sizing:border-box;
 }
-
+img{
+  width:200px;
+  max-width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+.history{
+  border-top:1px solid #374151;
+  margin-top:10px;
+  padding-top:10px;
+}
+a{color:#93c5fd}
+.row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.row button{
+  margin-right:0;
+}
+.meta{
+  color:#cbd5e1;
+  margin-top:4px;
+}
+.stars{
+  color:#fbbf24;
+  font-size:18px;
+  margin-top:4px;
+}
+.hidden{
+  display:none;
+}
 </style>
 </head>
 
 <body>
 
-<h1>Buckethead Pikes Tracker</h1>
+<div class="card">
+  <h2>Buckethead Pikes Tracker</h2>
+  <div>Max Pike # : <b>700</b></div>
+</div>
 
-<button onclick="generateRandomPike()">Generate Random Pike</button>
+<div class="card">
+  <h3>Random Pike</h3>
+  <div class="pike-line" id="number">—</div>
+  <div id="art"></div>
+  <div>
+    <button onclick="draw()">Generate Random Pike</button>
+  </div>
+  <div>
+    <button onclick="findOnYouTube()">Find on YouTube</button>
+  </div>
+</div>
 
-<div id="pikeDisplay"></div>
+<div class="card">
+  <h3>Mark as Listened</h3>
 
-<button onclick="openYouTube()">Find on YouTube</button>
+  Pike Name
+  <input id="name">
 
-<br>
+  YouTube Link
+  <input id="youtube">
 
-<input id="pikeNameField" placeholder="Pike Name">
+  Rating
+  <select id="rating">
+    <option value="">Select rating</option>
+    <option value="0">0 Stars</option>
+    <option value="1">1 Star</option>
+    <option value="2">2 Stars</option>
+    <option value="3">3 Stars</option>
+    <option value="4">4 Stars</option>
+    <option value="5">5 Stars</option>
+  </select>
 
-<br>
+  Comment
+  <textarea id="comment"></textarea>
 
-<label>Rating</label>
-<select id="rating">
-<option value="0">0</option>
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-</select>
+  <button onclick="mark()">Mark Listened</button>
+</div>
 
-<br>
+<div class="card">
+  <h3>Manual Entry</h3>
 
-<textarea id="comment" placeholder="Comment"></textarea>
+  Pike #
+  <input id="manualNumber" type="number">
 
-<br>
+  Name
+  <input id="manualName">
 
-<button onclick="savePike()">Save Listened Pike</button>
+  YouTube Link
+  <input id="manualYoutube">
 
-<h2>Listened Pikes</h2>
+  Rating
+  <select id="manualRating">
+    <option value="">Select rating</option>
+    <option value="0">0 Stars</option>
+    <option value="1">1 Star</option>
+    <option value="2">2 Stars</option>
+    <option value="3">3 Stars</option>
+    <option value="4">4 Stars</option>
+    <option value="5">5 Stars</option>
+  </select>
 
-<div id="historyList"></div>
+  Comment
+  <textarea id="manualComment"></textarea>
 
+  <button onclick="manualAdd()">Add to History</button>
+</div>
+
+<div class="card">
+  <h3>Listening History</h3>
+  <button class="small" onclick="clearHistory()">Clear Listen History</button>
+  <div id="history"></div>
+</div>
 
 <script>
+let MAX_PIKE = 700
+let pikes = {}
 
-const pikes = [
-{num:1,name:"It's Alive"},
-{num:2,name:"Empty Space"},
-{num:3,name:"3 Foot Clearance"},
-{num:4,name:"Underground Chamber"},
-{num:5,name:"Look Up There"},
-{num:13,name:"Pike 13"},
-{num:51,name:"Claymation Courtyard"},
-{num:65,name:"Hold Me Forever"},
-{num:95,name:"Northern Lights"},
-{num:150,name:"Heaven is your Home"}
-];
-
-let currentPike = null;
-
-
-function generateRandomPike(){
-
-const random = pikes[Math.floor(Math.random()*pikes.length)];
-
-currentPike = random;
-
-const display = `Pike ${random.num} - ${random.name}`;
-
-document.getElementById("pikeDisplay").innerText = display;
-
-document.getElementById("pikeNameField").value = display;
-
+let state = {
+  remaining: [],
+  history: [],
+  current: null
 }
 
-
-function openYouTube(){
-
-if(!currentPike) return;
-
-const search = encodeURIComponent(`Buckethead Pike ${currentPike.num} ${currentPike.name}`);
-
-window.open(`https://www.youtube.com/results?search_query=${search}`);
-
+function fillRemaining(){
+  state.remaining = []
+  for(let i=1;i<=MAX_PIKE;i++) state.remaining.push(i)
 }
 
+fillRemaining()
 
-function savePike(){
+fetch("pikes_with_art.json")
+.then(r=>r.json())
+.then(data=>{
+  data.forEach(p=>pikes[p.number]=p)
+  if(state.current){
+    renderCurrent()
+  }
+})
 
-if(!currentPike) return;
-
-const rating = document.getElementById("rating").value;
-const comment = document.getElementById("comment").value;
-
-const data = {
-num:currentPike.num,
-name:currentPike.name,
-rating:rating,
-comment:comment
-};
-
-let history = JSON.parse(localStorage.getItem("pikeHistory")||"[]");
-
-history.push(data);
-
-localStorage.setItem("pikeHistory",JSON.stringify(history));
-
-loadHistory();
-
+function getMappedName(number){
+  let p = pikes[number]
+  let title = p?.title || ""
+  return "Pike " + number + (title ? " - " + title : "")
 }
 
-
-function loadHistory(){
-
-let history = JSON.parse(localStorage.getItem("pikeHistory")||"[]");
-
-const container = document.getElementById("historyList");
-
-container.innerHTML="";
-
-history.forEach((pike,index)=>{
-
-const div = document.createElement("div");
-
-div.className="history-item";
-
-div.innerHTML = `
-<b>Pike ${pike.num} - ${pike.name}</b><br>
-Rating: ${pike.rating}<br>
-Comment: ${pike.comment}<br>
-<button onclick="editPike(${index})">Edit</button>
-<button onclick="removePike(${index})">Remove</button>
-`;
-
-container.appendChild(div);
-
-});
-
+function renderStars(rating){
+  if(rating === "" || rating === null || rating === undefined) return ""
+  let n = parseInt(rating,10)
+  if(isNaN(n)) return ""
+  return "★".repeat(n) + "☆".repeat(5-n)
 }
 
+function renderCurrent(){
+  if(!state.current){
+    document.getElementById("number").innerText = "—"
+    document.getElementById("art").innerHTML = ""
+    return
+  }
 
-function removePike(index){
+  let p = pikes[state.current]
+  let title = p?.title || ""
+  let fullName = "Pike " + state.current + (title ? " - " + title : "")
+  document.getElementById("number").innerText = fullName
+  document.getElementById("name").value = fullName
 
-let history = JSON.parse(localStorage.getItem("pikeHistory")||"[]");
+  if(p?.youtube && !document.getElementById("youtube").value){
+    document.getElementById("youtube").value = p.youtube
+  }
 
-history.splice(index,1);
-
-localStorage.setItem("pikeHistory",JSON.stringify(history));
-
-loadHistory();
-
+  if(p?.art_url){
+    document.getElementById("art").innerHTML = '<img src="'+p.art_url+'" alt="">'
+  }else{
+    document.getElementById("art").innerHTML = ""
+  }
 }
 
+function draw(){
+  if(state.remaining.length===0) return
 
-function editPike(index){
+  let r = state.remaining[Math.floor(Math.random()*state.remaining.length)]
+  state.current = r
 
-let history = JSON.parse(localStorage.getItem("pikeHistory")||"[]");
+  document.getElementById("youtube").value = ""
+  document.getElementById("comment").value = ""
+  document.getElementById("rating").value = ""
 
-const newRating = prompt("New rating (0-5)",history[index].rating);
-const newComment = prompt("New comment",history[index].comment);
-
-history[index].rating = newRating;
-history[index].comment = newComment;
-
-localStorage.setItem("pikeHistory",JSON.stringify(history));
-
-loadHistory();
-
+  renderCurrent()
 }
 
+function findOnYouTube(){
+  if(!state.current) return
 
-loadHistory();
+  let p = pikes[state.current]
+  let title = p?.title || ""
+  let query = "Buckethead Pike " + state.current + (title ? " " + title : "")
+  let url = "https://www.youtube.com/results?search_query=" + encodeURIComponent(query)
+  window.open(url,"_blank")
+}
 
+function mark(){
+  let n = state.current
+  if(!n) return
+
+  let name = document.getElementById("name").value
+  let yt = document.getElementById("youtube").value
+  let comment = document.getElementById("comment").value
+  let rating = document.getElementById("rating").value
+  let art = pikes[n]?.art_url || ""
+
+  state.remaining = state.remaining.filter(x=>x!=n)
+  state.history = state.history.filter(x=>x.number!=n)
+  state.history.unshift({number:n,name,art,yt,comment,rating})
+
+  state.current = null
+
+  document.getElementById("name").value=""
+  document.getElementById("youtube").value=""
+  document.getElementById("comment").value=""
+  document.getElementById("rating").value=""
+
+  save()
+  render()
+  renderCurrent()
+}
+
+function manualAdd(){
+  let n = parseInt(document.getElementById("manualNumber").value)
+  let name = document.getElementById("manualName").value
+  let yt = document.getElementById("manualYoutube").value
+  let comment = document.getElementById("manualComment").value
+  let rating = document.getElementById("manualRating").value
+
+  if(!n || n<1 || n>MAX_PIKE) return
+
+  if(!name){
+    name = getMappedName(n)
+  }
+
+  let art = pikes[n]?.art_url || ""
+
+  state.remaining = state.remaining.filter(x=>x!=n)
+  state.history = state.history.filter(x=>x.number!=n)
+  state.history.unshift({number:n,name,art,yt,comment,rating})
+
+  document.getElementById("manualNumber").value = ""
+  document.getElementById("manualName").value = ""
+  document.getElementById("manualYoutube").value = ""
+  document.getElementById("manualComment").value = ""
+  document.getElementById("manualRating").value = ""
+
+  save()
+  render()
+}
+
+function remove(n){
+  state.history = state.history.filter(x=>x.number!=n)
+
+  if(!state.remaining.includes(n)){
+    state.remaining.push(n)
+  }
+
+  state.remaining.sort((a,b)=>a-b)
+
+  save()
+  render()
+}
+
+function editEntry(n){
+  let entry = state.history.find(x=>x.number==n)
+  if(!entry) return
+
+  let action = prompt(
+    "Type 1 to edit Pike name, 2 to edit YouTube URL, 3 to edit rating, 4 to remove from history",
+    "1"
+  )
+
+  if(action===null) return
+
+  if(action==="1"){
+    let newName = prompt("Edit Pike name", entry.name || "")
+    if(newName!==null){
+      entry.name = newName
+    }
+  }else if(action==="2"){
+    let newYt = prompt("Edit YouTube URL", entry.yt || "")
+    if(newYt!==null){
+      entry.yt = newYt
+    }
+  }else if(action==="3"){
+    let newRating = prompt("Edit rating (0-5)", entry.rating ?? "")
+    if(newRating!==null){
+      entry.rating = newRating
+    }
+  }else if(action==="4"){
+    remove(n)
+    return
+  }
+
+  save()
+  render()
+}
+
+function clearHistory(){
+  state.history = []
+  fillRemaining()
+  state.current = null
+  save()
+  render()
+  renderCurrent()
+}
+
+function render(){
+  document.getElementById("history").innerHTML =
+    state.history.map(h=>`
+      <div class="history">
+        <b>#${h.number}</b> ${h.name||""}
+        ${h.rating!=="" && h.rating!=null ? `<div class="stars">${renderStars(h.rating)}</div>` : ""}
+        ${h.comment ? `<div class="meta">${h.comment}</div>` : ""}
+        ${h.yt ? `<div><a href="${h.yt}" target="_blank">YouTube</a></div>` : ""}
+        <div class="row">
+          <button onclick="editEntry(${h.number})">Edit</button>
+          <button onclick="remove(${h.number})">Remove</button>
+        </div>
+      </div>
+    `).join("")
+}
+
+function save(){
+  localStorage.setItem("pikes",JSON.stringify(state))
+}
+
+let s = localStorage.getItem("pikes")
+if(s) state = JSON.parse(s)
+
+render()
+renderCurrent()
 </script>
 
 </body>
