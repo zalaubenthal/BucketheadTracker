@@ -72,13 +72,7 @@ padding-top:10px;
 
 <h2>Buckethead Pikes Tracker</h2>
 
-Max Pike #
-
-<input id="max" type="number" value="700">
-
-<button class="small" onclick="reset()">Start / Reset Max Pike #</button>
-
-<button class="small" onclick="clearHistory()">Clear Listen History</button>
+<div>Max Pike # : <b>700</b></div>
 
 </div>
 
@@ -134,19 +128,25 @@ Name
 
 <h3>Listening History</h3>
 
+<button class="small" onclick="clearHistory()">Clear Listen History</button>
+
 <div id="history"></div>
 
 </div>
 
 <script>
 
+let MAX_PIKE = 700
+
 let pikes={}
+
 let state={
-max:700,
 remaining:[],
 history:[],
 current:null
 }
+
+for(let i=1;i<=MAX_PIKE;i++) state.remaining.push(i)
 
 fetch("pikes_with_art.json")
 .then(r=>r.json())
@@ -154,25 +154,9 @@ fetch("pikes_with_art.json")
 data.forEach(p=>pikes[p.number]=p)
 })
 
-function reset(){
-
-state.max=parseInt(document.getElementById("max").value)||700
-
-state.remaining=[]
-
-for(let i=1;i<=state.max;i++) state.remaining.push(i)
-
-state.history=[]
-
-state.current=null
-
-save()
-
-render()
-
-}
-
 function draw(){
+
+if(state.remaining.length===0) return
 
 let r=state.remaining[Math.floor(Math.random()*state.remaining.length)]
 
@@ -199,15 +183,11 @@ document.getElementById("art").innerHTML=""
 function mark(){
 
 let n=state.current
-
 if(!n) return
 
 let name=document.getElementById("name").value
-
 let art=document.getElementById("arturl").value
-
 let yt=document.getElementById("youtube").value
-
 let comment=document.getElementById("comment").value
 
 state.remaining=state.remaining.filter(x=>x!=n)
@@ -217,7 +197,6 @@ state.history.unshift({number:n,name,art,yt,comment})
 state.current=null
 
 save()
-
 render()
 
 }
@@ -225,7 +204,6 @@ render()
 function manualAdd(){
 
 let n=parseInt(document.getElementById("manualNumber").value)
-
 let name=document.getElementById("manualName").value
 
 state.remaining=state.remaining.filter(x=>x!=n)
@@ -233,7 +211,6 @@ state.remaining=state.remaining.filter(x=>x!=n)
 state.history.unshift({number:n,name})
 
 save()
-
 render()
 
 }
@@ -245,7 +222,18 @@ state.history=state.history.filter(x=>x.number!=n)
 if(!state.remaining.includes(n)) state.remaining.push(n)
 
 save()
+render()
 
+}
+
+function clearHistory(){
+
+state.history=[]
+state.remaining=[]
+
+for(let i=1;i<=MAX_PIKE;i++) state.remaining.push(i)
+
+save()
 render()
 
 }
