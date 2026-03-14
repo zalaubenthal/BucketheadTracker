@@ -7,89 +7,45 @@
 <style>
 
 body{
-    font-family: Arial, Helvetica, sans-serif;
-    background:#111;
-    color:white;
-    text-align:center;
-    margin:0;
-    padding:0;
-}
-
-/* HEADER */
-
-.header{
-    padding:30px 0 10px 0;
-}
-
-.logo{
-    width:120px;
-    height:auto;
-    display:block;
-    margin:auto;
-}
-
-h1{
-    margin-top:10px;
-}
-
-/* RANDOM PIKE SECTION */
-
-.random-section{
-    margin-top:20px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
+font-family:Arial;
+background:#111;
+color:white;
+text-align:center;
+padding:20px;
 }
 
 button{
-    padding:10px 16px;
-    font-size:16px;
-    cursor:pointer;
+padding:10px 16px;
+margin:6px;
+font-size:16px;
+cursor:pointer;
 }
 
 input, textarea, select{
-    padding:6px;
-    font-size:14px;
+padding:6px;
+margin:6px;
 }
 
 #pikeDisplay{
-    font-size:20px;
-    font-weight:bold;
-}
-
-/* HISTORY */
-
-.history{
-    margin-top:40px;
+font-size:18px;
+font-weight:bold;
+margin-top:10px;
 }
 
 .history-item{
-    background:#222;
-    padding:12px;
-    margin:8px auto;
-    width:420px;
-    border-radius:6px;
-}
-
-.history-buttons button{
-    margin:4px;
+background:#222;
+padding:10px;
+margin:10px auto;
+width:420px;
+border-radius:6px;
 }
 
 </style>
 </head>
 
-
 <body>
 
-<div class="header">
-<img src="IMG_2763.png" class="logo">
 <h1>Buckethead Pikes Tracker</h1>
-</div>
-
-
-<div class="random-section">
 
 <button onclick="generateRandomPike()">Generate Random Pike</button>
 
@@ -97,7 +53,11 @@ input, textarea, select{
 
 <button onclick="openYouTube()">Find on YouTube</button>
 
+<br>
+
 <input id="pikeNameField" placeholder="Pike Name">
+
+<br>
 
 <label>Rating</label>
 <select id="rating">
@@ -109,22 +69,17 @@ input, textarea, select{
 <option value="5">5</option>
 </select>
 
+<br>
+
 <textarea id="comment" placeholder="Comment"></textarea>
 
+<br>
+
 <button onclick="savePike()">Save Listened Pike</button>
-
-</div>
-
-
-
-<div class="history">
 
 <h2>Listened Pikes</h2>
 
 <div id="historyList"></div>
-
-</div>
-
 
 
 <script>
@@ -145,7 +100,6 @@ const pikes = [
 let currentPike = null;
 
 
-
 function generateRandomPike(){
 
 const random = pikes[Math.floor(Math.random()*pikes.length)];
@@ -161,7 +115,6 @@ document.getElementById("pikeNameField").value = display;
 }
 
 
-
 function openYouTube(){
 
 if(!currentPike) return;
@@ -171,7 +124,6 @@ const search = encodeURIComponent(`Buckethead Pike ${currentPike.num} ${currentP
 window.open(`https://www.youtube.com/results?search_query=${search}`);
 
 }
-
 
 
 function savePike(){
@@ -199,7 +151,6 @@ loadHistory();
 }
 
 
-
 function loadHistory(){
 
 let history = JSON.parse(localStorage.getItem("pikeHistory")||"[]");
@@ -218,10 +169,8 @@ div.innerHTML = `
 <b>Pike ${pike.num} - ${pike.name}</b><br>
 Rating: ${pike.rating}<br>
 Comment: ${pike.comment}<br>
-<div class="history-buttons">
 <button onclick="editPike(${index})">Edit</button>
 <button onclick="removePike(${index})">Remove</button>
-</div>
 `;
 
 container.appendChild(div);
@@ -229,7 +178,6 @@ container.appendChild(div);
 });
 
 }
-
 
 
 function removePike(index){
@@ -243,7 +191,6 @@ localStorage.setItem("pikeHistory",JSON.stringify(history));
 loadHistory();
 
 }
-
 
 
 function editPike(index){
@@ -263,11 +210,9 @@ loadHistory();
 }
 
 
-
 loadHistory();
 
 </script>
-
 
 </body>
 </html>
