@@ -1,412 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Buckethead Pikes Tracker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buckethead Pikes Tracker</title>
 
-  <style>
-    :root{
-      --bg:#0f172a;
-      --panel:#111827;
-      --panel2:#1f2937;
-      --text:#f9fafb;
-      --muted:#9ca3af;
-      --accent:#2563eb;
-      --accent2:#1d4ed8;
-      --border:#374151;
-      --good:#15803d;
-      --danger:#b91c1c;
-      --shadow:0 10px 30px rgba(0,0,0,.25);
-      --radius:16px;
-    }
+<style>
 
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1220,#111827);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-    body{min-height:100vh;padding:16px}
-    .wrap{max-width:820px;margin:0 auto;padding-bottom:96px}
-    .card{
-      background:rgba(17,24,39,.96);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:16px;
-      margin-bottom:16px;
-      box-shadow:var(--shadow);
-    }
-    h1,h2,h3{margin:0 0 12px}
-    h1{font-size:1.5rem}
-    h2{font-size:1.15rem}
-    h3{font-size:1rem}
-    .muted,.stats,.small{color:var(--muted)}
-    .label{
-      font-size:.95rem;
-      margin:10px 0 6px;
-      display:block;
-    }
-    input,textarea,button{
-      font:inherit;
-    }
-    input[type="number"],input[type="text"],textarea{
-      width:100%;
-      border:1px solid var(--border);
-      background:var(--panel2);
-      color:var(--text);
-      border-radius:14px;
-      padding:14px 14px;
-      font-size:16px;
-      outline:none;
-    }
-    textarea{
-      min-height:110px;
-      resize:vertical;
-    }
-    input:focus,textarea:focus{
-      border-color:#60a5fa;
-      box-shadow:0 0 0 3px rgba(96,165,250,.2);
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    button{
-      border:0;
-      border-radius:14px;
-      background:var(--accent);
-      color:white;
-      padding:14px 16px;
-      font-size:16px;
-      font-weight:700;
-      min-height:52px;
-      cursor:pointer;
-      touch-action:manipulation;
-      flex:1 1 180px;
-    }
-    button:active{transform:translateY(1px)}
-    button.secondary{background:#4b5563}
-    button.good{background:var(--good)}
-    button.danger{background:var(--danger)}
+body{
+font-family:Arial;
+background:#111827;
+color:white;
+padding:20px;
+}
 
-    .hero{
-      text-align:center;
-      padding:22px 12px;
-    }
-    .big{
-      font-size:clamp(3rem,14vw,6rem);
-      font-weight:800;
-      line-height:1;
-      margin:6px 0 8px;
-      word-break:break-word;
-    }
-    .title-preview{
-      font-size:1rem;
-      color:#d1d5db;
-      min-height:24px;
-    }
+.card{
+background:#1f2937;
+padding:16px;
+border-radius:10px;
+margin-bottom:16px;
+}
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-top:12px;
-    }
-    .stat{
-      background:var(--panel2);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      text-align:center;
-    }
-    .stat .n{
-      font-size:1.2rem;
-      font-weight:800;
-      color:#fff;
-    }
-    .stat .t{
-      font-size:.8rem;
-      color:var(--muted);
-      margin-top:4px;
-    }
+button{
+padding:10px 14px;
+border:0;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
 
-    .history-item{
-      border-top:1px solid var(--border);
-      padding:12px 0;
-    }
-    .history-item:first-child{border-top:0;padding-top:0}
-    .pill{
-      display:inline-block;
-      border-radius:999px;
-      background:#1e3a8a;
-      color:#dbeafe;
-      padding:5px 10px;
-      font-size:.8rem;
-      font-weight:700;
-      margin-right:8px;
-    }
-    .history-title{
-      font-weight:700;
-      display:inline;
-    }
-    .history-meta{
-      color:var(--muted);
-      font-size:.82rem;
-      margin-top:6px;
-    }
-    .empty{
-      color:var(--muted);
-      padding:10px 0;
-    }
+.small{
+font-size:13px;
+padding:6px 10px;
+}
 
-    .sticky-actions{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-      background:rgba(15,23,42,.96);
-      border-top:1px solid var(--border);
-      backdrop-filter:blur(8px);
-    }
-    .sticky-actions .inner{
-      max-width:820px;
-      margin:0 auto;
-      display:flex;
-      gap:10px;
-    }
+.big{
+font-size:64px;
+font-weight:bold;
+}
 
-    @media (max-width:640px){
-      body{padding:12px}
-      .card{padding:14px}
-      .stats-grid{grid-template-columns:1fr}
-      .row{flex-direction:column}
-      button{width:100%}
-    }
-  </style>
+input,textarea{
+width:100%;
+padding:8px;
+margin-top:6px;
+margin-bottom:10px;
+border-radius:6px;
+border:1px solid #374151;
+background:#111827;
+color:white;
+}
+
+img{
+width:200px;
+border-radius:10px;
+}
+
+.history{
+border-top:1px solid #374151;
+margin-top:10px;
+padding-top:10px;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Buckethead Pikes Tracker</h1>
-      <div class="small">Works on iPhone and Android. Add it to your home screen for an app-like experience.</div>
 
-      <label class="label" for="maxNumber">Max Pike Number</label>
-      <input id="maxNumber" type="number" min="1" value="700" />
+<div class="card">
 
-      <div class="row" style="margin-top:12px;">
-        <button onclick="resetApp()">Start / Reset</button>
-        <button class="secondary" onclick="clearData()">Clear Saved Data</button>
-      </div>
+<h2>Buckethead Pikes Tracker</h2>
 
-      <div class="stats-grid">
-        <div class="stat">
-          <div class="n" id="listenedCount">0</div>
-          <div class="t">Listened</div>
-        </div>
-        <div class="stat">
-          <div class="n" id="remainingCount">0</div>
-          <div class="t">Remaining</div>
-        </div>
-        <div class="stat">
-          <div class="n" id="maxCount">700</div>
-          <div class="t">Max</div>
-        </div>
-      </div>
-    </div>
+Max Pike #
 
-    <div class="card hero">
-      <h2>Random Pike</h2>
-      <div class="big" id="currentNumber">—</div>
-      <div class="title-preview" id="currentTitle">Tap Generate Random Pike</div>
-    </div>
+<input id="max" type="number" value="700">
 
-    <div class="card">
-      <h2>Mark as Listened</h2>
+<button class="small" onclick="reset()">Start / Reset Max Pike #</button>
 
-      <label class="label" for="pikeName">Pike Name</label>
-      <input id="pikeName" type="text" placeholder="Auto-filled if known" />
+<button class="small" onclick="clearHistory()">Clear Listen History</button>
 
-      <label class="label" for="comment">Comment</label>
-      <textarea id="comment" placeholder="Your notes"></textarea>
+</div>
 
-      <div class="row">
-        <button class="good" onclick="markListened()">Mark Listened</button>
-      </div>
-    </div>
+<div class="card">
 
-    <div class="card">
-      <h3>History</h3>
-      <div id="history"></div>
-    </div>
-  </div>
+<h3>Random Pike</h3>
 
-  <div class="sticky-actions">
-    <div class="inner">
-      <button onclick="drawPike()">Generate Random Pike</button>
-    </div>
-  </div>
+<div class="big" id="number">—</div>
 
-  <script>
-    const STORAGE_KEY = "buckethead_pikes_tracker_mobile_v1";
+<div id="title"></div>
 
-    const PIKE_TITLES = {
-      1:"It's Alive",
-      2:"Empty Space",
-      3:"3 Foot Clearance",
-      4:"Underground Chamber",
-      5:"Look Up There",
-      6:"Balloon Cement",
-      7:"The Shores of Molokai",
-      8:"Racks",
-      9:"March of the Slunks",
-      10:"The Silent Picture Book",
-      11:"Forgotten Library",
-      12:"Propellar",
-      13:"Pike 13",
-      14:"The Mark of Davis",
-      15:"View Master",
-      16:"The Boiling Pond",
-      17:"The Spirit Winds",
-      18:"Twisterlend",
-      19:"Teeter Slaughter",
-      20:"The Frog Chips",
-      21:"Pearson's Square",
-      22:"Slug Cartilage",
-      23:"Worms for the Garden",
-      24:"The Five Blocks",
-      25:"Polar Trench",
-      26:"Pike 26",
-      27:"Coat of Charms",
-      28:"Feathers",
-      29:"Telescape",
-      30:"Mannequin Cemetery"
-    };
+<div id="art"></div>
 
-    let state = {
-      max: 700,
-      remaining: [],
-      history: [],
-      current: null
-    };
+<button onclick="draw()">Generate Random Pike</button>
 
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
+</div>
 
-    function loadState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        try {
-          state = JSON.parse(raw);
-        } catch (e) {}
-      }
-      render();
-    }
+<div class="card">
 
-    function resetApp() {
-      const max = parseInt(document.getElementById("maxNumber").value, 10) || 700;
-      state.max = Math.max(1, max);
-      state.remaining = [];
-      for (let i = 1; i <= state.max; i++) state.remaining.push(i);
-      state.history = [];
-      state.current = null;
-      document.getElementById("pikeName").value = "";
-      document.getElementById("comment").value = "";
-      saveState();
-      render();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+<h3>Mark as Listened</h3>
 
-    function clearData() {
-      localStorage.removeItem(STORAGE_KEY);
-      state = { max: 700, remaining: [], history: [], current: null };
-      document.getElementById("maxNumber").value = 700;
-      resetApp();
-    }
+Pike Name
+<input id="name">
 
-    function drawPike() {
-      if (state.remaining.length === 0) {
-        alert("All numbers in the current range are used.");
-        return;
-      }
-      const idx = Math.floor(Math.random() * state.remaining.length);
-      state.current = state.remaining[idx];
-      const knownTitle = PIKE_TITLES[state.current] || "";
-      document.getElementById("pikeName").value = knownTitle;
-      document.getElementById("currentNumber").scrollIntoView({ behavior: "smooth", block: "center" });
-      render();
-    }
+Album Art URL
+<input id="arturl">
 
-    function markListened() {
-      if (state.current === null) {
-        alert("Generate a Pike first.");
-        return;
-      }
+YouTube Link
+<input id="youtube">
 
-      const pikeName = document.getElementById("pikeName").value.trim();
-      const comment = document.getElementById("comment").value.trim();
+Comment
+<textarea id="comment"></textarea>
 
-      state.remaining = state.remaining.filter(n => n !== state.current);
-      state.history.unshift({
-        number: state.current,
-        title: pikeName || "Unknown / unreleased / not mapped yet",
-        comment: comment,
-        at: new Date().toLocaleString()
-      });
+<button onclick="mark()">Mark Listened</button>
 
-      state.current = null;
-      document.getElementById("pikeName").value = "";
-      document.getElementById("comment").value = "";
-      saveState();
-      render();
-    }
+</div>
 
-    function render() {
-      document.getElementById("maxNumber").value = state.max || 700;
-      document.getElementById("currentNumber").textContent = state.current ?? "—";
-      document.getElementById("currentTitle").textContent =
-        state.current === null
-          ? "Tap Generate Random Pike"
-          : (PIKE_TITLES[state.current] || "Unknown / unreleased / not mapped yet");
+<div class="card">
 
-      document.getElementById("listenedCount").textContent = state.history.length;
-      document.getElementById("remainingCount").textContent = state.remaining.length;
-      document.getElementById("maxCount").textContent = state.max;
+<h3>Manual Entry</h3>
 
-      const historyEl = document.getElementById("history");
-      if (!state.history.length) {
-        historyEl.innerHTML = '<div class="empty">No listened Pikes yet.</div>';
-        return;
-      }
+Pike #
+<input id="manualNumber" type="number">
 
-      historyEl.innerHTML = state.history.map(item => `
-        <div class="history-item">
-          <div><span class="pill">#${item.number}</span><span class="history-title">${escapeHtml(item.title)}</span></div>
-          <div style="margin-top:8px;">${escapeHtml(item.comment || "")}</div>
-          <div class="history-meta">${escapeHtml(item.at)}</div>
-        </div>
-      `).join("");
-    }
+Name
+<input id="manualName">
 
-    function escapeHtml(str) {
-      return String(str || "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+<button onclick="manualAdd()">Add to History</button>
 
-    loadState();
-    if (!state.remaining.length && !state.history.length) {
-      resetApp();
-    }
-  </script>
+</div>
+
+<div class="card">
+
+<h3>Listening History</h3>
+
+<div id="history"></div>
+
+</div>
+
+<script>
+
+let pikes={}
+let state={
+max:700,
+remaining:[],
+history:[],
+current:null
+}
+
+fetch("pikes_with_art.json")
+.then(r=>r.json())
+.then(data=>{
+data.forEach(p=>pikes[p.number]=p)
+})
+
+function reset(){
+
+state.max=parseInt(document.getElementById("max").value)||700
+
+state.remaining=[]
+
+for(let i=1;i<=state.max;i++) state.remaining.push(i)
+
+state.history=[]
+
+state.current=null
+
+save()
+
+render()
+
+}
+
+function draw(){
+
+let r=state.remaining[Math.floor(Math.random()*state.remaining.length)]
+
+state.current=r
+
+let p=pikes[r]
+
+document.getElementById("number").innerText=r
+
+document.getElementById("title").innerText=p?.title||""
+
+if(p?.art_url){
+
+document.getElementById("art").innerHTML='<img src="'+p.art_url+'">'
+
+}else{
+
+document.getElementById("art").innerHTML=""
+
+}
+
+}
+
+function mark(){
+
+let n=state.current
+
+if(!n) return
+
+let name=document.getElementById("name").value
+
+let art=document.getElementById("arturl").value
+
+let yt=document.getElementById("youtube").value
+
+let comment=document.getElementById("comment").value
+
+state.remaining=state.remaining.filter(x=>x!=n)
+
+state.history.unshift({number:n,name,art,yt,comment})
+
+state.current=null
+
+save()
+
+render()
+
+}
+
+function manualAdd(){
+
+let n=parseInt(document.getElementById("manualNumber").value)
+
+let name=document.getElementById("manualName").value
+
+state.remaining=state.remaining.filter(x=>x!=n)
+
+state.history.unshift({number:n,name})
+
+save()
+
+render()
+
+}
+
+function remove(n){
+
+state.history=state.history.filter(x=>x.number!=n)
+
+if(!state.remaining.includes(n)) state.remaining.push(n)
+
+save()
+
+render()
+
+}
+
+function render(){
+
+document.getElementById("history").innerHTML=
+
+state.history.map(h=>`
+
+<div class="history">
+
+<b>#${h.number}</b> ${h.name||""}
+
+<br>
+
+${h.yt?`<a href="${h.yt}" target="_blank">YouTube</a>`:""}
+
+<br>
+
+<button onclick="remove(${h.number})">Remove</button>
+
+</div>
+
+`).join("")
+
+}
+
+function save(){
+
+localStorage.setItem("pikes",JSON.stringify(state))
+
+}
+
+let s=localStorage.getItem("pikes")
+
+if(s) state=JSON.parse(s)
+
+render()
+
+</script>
+
 </body>
 </html>
