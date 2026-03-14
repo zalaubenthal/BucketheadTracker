@@ -8,7 +8,7 @@
 <style>
 
 body{
-font-family:Arial;
+font-family:Arial,Helvetica,sans-serif;
 background:#111827;
 color:white;
 padding:20px;
@@ -29,6 +29,8 @@ background:#2563eb;
 color:white;
 font-weight:bold;
 cursor:pointer;
+margin-right:8px;
+margin-top:8px;
 }
 
 .small{
@@ -36,9 +38,12 @@ font-size:13px;
 padding:6px 10px;
 }
 
-.big{
-font-size:64px;
+.pike-line{
+font-size:28px;
 font-weight:bold;
+line-height:1.3;
+margin:12px 0 16px;
+word-break:break-word;
 }
 
 input,textarea{
@@ -50,17 +55,32 @@ border-radius:6px;
 border:1px solid #374151;
 background:#111827;
 color:white;
+box-sizing:border-box;
 }
 
 img{
 width:200px;
+max-width:100%;
 border-radius:10px;
+margin-top:10px;
 }
 
 .history{
 border-top:1px solid #374151;
 margin-top:10px;
 padding-top:10px;
+}
+
+a{color:#93c5fd}
+
+.row{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+}
+
+.row button{
+margin-right:0;
 }
 
 </style>
@@ -80,13 +100,14 @@ padding-top:10px;
 
 <h3>Random Pike</h3>
 
-<div class="big" id="number">—</div>
-
-<div id="title"></div>
+<div class="pike-line" id="number">—</div>
 
 <div id="art"></div>
 
+<div class="row">
 <button onclick="draw()">Generate Random Pike</button>
+<button onclick="findOnYouTube()">Find on YouTube</button>
+</div>
 
 </div>
 
@@ -138,110 +159,189 @@ Name
 
 let MAX_PIKE = 700
 
-let pikes={}
+let pikes = {}
 
-let state={
-remaining:[],
-history:[],
-current:null
+let state = {
+remaining: [],
+history: [],
+current: null
 }
 
+function fillRemaining(){
+state.remaining = []
 for(let i=1;i<=MAX_PIKE;i++) state.remaining.push(i)
+}
+
+fillRemaining()
 
 fetch("pikes_with_art.json")
 .then(r=>r.json())
 .then(data=>{
 data.forEach(p=>pikes[p.number]=p)
+if(state.current){
+renderCurrent()
+}
 })
+
+function renderCurrent(){
+
+if(!state.current){
+document.getElementById("number").innerText = "—"
+document.getElementById("art").innerHTML = ""
+return
+}
+
+let p = pikes[state.current]
+
+let title = p?.title || ""
+
+document.getElementById("number").innerText =
+"Pike " + state.current + (title ? " - " + title : "")
+
+if(title){
+document.getElementById("name").value = title
+}
+
+if(p?.youtube && !document.getElementById("youtube").value){
+document.getElementById("youtube").value = p.youtube
+}
+
+if(p?.art_url){
+
+document.getElementById("art").innerHTML =
+'<img src="'+p.art_url+'">'
+
+if(!document.getElementById("arturl").value){
+document.getElementById("arturl").value = p.art_url
+}
+
+}else{
+
+document.getElementById("art").innerHTML = ""
+
+}
+
+}
 
 function draw(){
 
 if(state.remaining.length===0) return
 
-let r=state.remaining[Math.floor(Math.random()*state.remaining.length)]
+let r = state.remaining[Math.floor(Math.random()*state.remaining.length)]
 
-state.current=r
+state.current = r
 
-let p=pikes[r]
+document.getElementById("arturl").value = ""
+document.getElementById("youtube").value = ""
+document.getElementById("comment").value = ""
 
-document.getElementById("number").innerText=r
-
-document.getElementById("title").innerText=p?.title||""
-
-if(p?.art_url){
-
-document.getElementById("art").innerHTML='<img src="'+p.art_url+'">'
-
-}else{
-
-document.getElementById("art").innerHTML=""
+renderCurrent()
 
 }
+
+function findOnYouTube(){
+
+if(!state.current) return
+
+let p = pikes[state.current]
+
+let title = p?.title || ""
+
+let query = "Buckethead Pike " + state.current + (title ? " " + title : "")
+
+let url =
+"https://www.youtube.com/results?search_query=" +
+encodeURIComponent(query)
+
+window.open(url,"_blank")
 
 }
 
 function mark(){
 
-let n=state.current
+let n = state.current
 if(!n) return
 
-let name=document.getElementById("name").value
-let art=document.getElementById("arturl").value
-let yt=document.getElementById("youtube").value
-let comment=document.getElementById("comment").value
+let name = document.getElementById("name").value
+let art = document.getElementById("arturl").value
+let yt = document.getElementById("youtube").value
+let comment = document.getElementById("comment").value
 
-state.remaining=state.remaining.filter(x=>x!=n)
+state.remaining = state.remaining.filter(x=>x!=n)
+
+state.history = state.history.filter(x=>x.number!=n)
 
 state.history.unshift({number:n,name,art,yt,comment})
 
-state.current=null
+state.current = null
+
+document.getElementById("name").value=""
+document.getElementById("arturl").value=""
+document.getElementById("youtube").value=""
+document.getElementById("comment").value=""
 
 save()
+
 render()
+
+renderCurrent()
 
 }
 
 function manualAdd(){
 
-let n=parseInt(document.getElementById("manualNumber").value)
-let name=document.getElementById("manualName").value
+let n = parseInt(document.getElementById("manualNumber").value)
 
-state.remaining=state.remaining.filter(x=>x!=n)
+let name = document.getElementById("manualName").value
+
+if(!n || n<1 || n>MAX_PIKE) return
+
+state.remaining = state.remaining.filter(x=>x!=n)
+
+state.history = state.history.filter(x=>x.number!=n)
 
 state.history.unshift({number:n,name})
 
 save()
+
 render()
 
 }
 
 function remove(n){
 
-state.history=state.history.filter(x=>x.number!=n)
+state.history = state.history.filter(x=>x.number!=n)
 
-if(!state.remaining.includes(n)) state.remaining.push(n)
+if(!state.remaining.includes(n))
+state.remaining.push(n)
+
+state.remaining.sort((a,b)=>a-b)
 
 save()
+
 render()
 
 }
 
 function clearHistory(){
 
-state.history=[]
-state.remaining=[]
+state.history = []
 
-for(let i=1;i<=MAX_PIKE;i++) state.remaining.push(i)
+fillRemaining()
+
+state.current = null
 
 save()
+
 render()
+
+renderCurrent()
 
 }
 
 function render(){
 
-document.getElementById("history").innerHTML=
-
+document.getElementById("history").innerHTML =
 state.history.map(h=>`
 
 <div class="history">
@@ -268,11 +368,13 @@ localStorage.setItem("pikes",JSON.stringify(state))
 
 }
 
-let s=localStorage.getItem("pikes")
+let s = localStorage.getItem("pikes")
 
-if(s) state=JSON.parse(s)
+if(s) state = JSON.parse(s)
 
 render()
+
+renderCurrent()
 
 </script>
 
