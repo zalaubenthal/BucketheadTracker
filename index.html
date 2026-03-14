@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buckethead Pikes Tracker</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f6fb;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:18px;
+border-radius:12px;
+margin-bottom:16px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+button{
+padding:12px 16px;
+border:0;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+margin-top:8px;
+font-size:16px;
+}
+
+button:hover{
+background:#1e4fd1;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin-top:6px;
+margin-bottom:10px;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:16px;
+}
+
+.big{
+font-size:64px;
+text-align:center;
+margin:20px 0;
+font-weight:bold;
+}
+
+.progress{
+font-size:14px;
+color:#666;
+margin-top:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>Buckethead Pikes Picker</h2>
+
+Max Pike Number
+<input id="max" type="number" value="700">
+
+<button onclick="reset()">Start / Reset</button>
+
+<div class="progress" id="stats"></div>
+
+</div>
+
+<div class="card">
+
+<div class="big" id="number">—</div>
+
+<button onclick="draw()">Generate Random Pike</button>
+
+</div>
+
+<div class="card">
+
+Pike Name
+<input id="name">
+
+Comment
+<textarea id="comment"></textarea>
+
+<button onclick="mark()">Mark Listened</button>
+
+</div>
+
+<div class="card">
+
+<h3>Listening History</h3>
+
+<div id="history"></div>
+
+</div>
+
+<script>
+
+let state={
+max:700,
+remaining:[],
+history:[],
+current:null
+}
+
+function save(){
+
+localStorage.setItem("buckethead_pikes",JSON.stringify(state))
+
+}
+
+function load(){
+
+let saved=localStorage.getItem("buckethead_pikes")
+
+if(saved){
+
+state=JSON.parse(saved)
+
+render()
+
+}else{
+
+reset()
+
+}
+
+}
+
+function reset(){
+
+state.max=parseInt(document.getElementById("max").value)||700
+
+state.remaining=[]
+
+for(let i=1;i<=state.max;i++){
+
+state.remaining.push(i)
+
+}
+
+state.history=[]
+
+state.current=null
+
+save()
+
+render()
+
+}
+
+function draw(){
+
+if(state.remaining.length==0){
+
+alert("All Pikes completed!")
+
+return
+
+}
+
+let i=Math.floor(Math.random()*state.remaining.length)
+
+state.current=state.remaining[i]
+
+render()
+
+}
+
+function mark(){
+
+if(state.current==null){
+
+alert("Generate a Pike first")
+
+return
+
+}
+
+let name=document.getElementById("name").value.trim()
+
+if(!name){
+
+alert("Enter Pike name")
+
+return
+
+}
+
+let comment=document.getElementById("comment").value
+
+state.remaining=state.remaining.filter(n=>n!=state.current)
+
+state.history.unshift({
+
+number:state.current,
+name:name,
+comment:comment
+
+})
+
+state.current=null
+
+document.getElementById("name").value=""
+document.getElementById("comment").value=""
+
+save()
+
+render()
+
+}
+
+function render(){
+
+document.getElementById("number").textContent=state.current ?? "—"
+
+let completed=state.history.length
+let remaining=state.remaining.length
+
+document.getElementById("stats").innerText =
+completed + " listened • " + remaining + " remaining"
+
+let html=state.history.map(x=>`
+
+<div>
+
+<b>#${x.number}</b> — ${x.name}<br>
+
+${x.comment}
+
+</div>
+
+<hr>
+
+`).join("")
+
+document.getElementById("history").innerHTML=html || "None yet"
+
+}
+
+load()
+
+</script>
+
+</body>
+
+</html>
